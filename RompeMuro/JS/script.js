@@ -1,37 +1,44 @@
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
-let colors = ["#fa75cc, #eafa75, #fa8975, #75b5fa, #adfa75, #97fdcf, #8a9507, #06fde3, #20fd06, #f80047"]
+let colors = ["#fa75cc", "#eafa75", "#fa8975", "#75b5fa", "#adfa75", "#97fdcf", "#8a9507", "#06fde3", "#20fd06", "#f80047"];
 
 canvas.height = 512;
 canvas.width = 448;
 
-const filas = 6
-const columnas = 33
-const ampleMur = 7
-const alturaMur = 33
-const margueTMur = 80
-const margueEMur = 30
-const separacioMur = 2
+const filas = 8;
+const columnas = 10;
+const ampleMur = 33;
+const alturaMur = 7;
+const margueTMur = 80;
+const margueEMur = 30;
+const separacioMur = 2;
 
-const murs = []
+const murs = [];
 const ESTAT_MUR = {
     DESTRUIT: 0,
-    SHOW: 1
+    TOCADO: 1,
+    SHOW: 2
+};
+
+function crearMur(c, f) {
+    let color = Math.floor(Math.random() * 10);
+    const murX = Math.floor(Math.random() * (canvas.width - ampleMur)); 
+    const murY = Math.floor(Math.random() * (canvas.height / 2 - alturaMur)); 
+
+    murs[c][f] = {
+        x: murX,
+        y: murY,
+        status: ESTAT_MUR.SHOW,
+        color: color,
+        vides: 2
+    };
 }
 
 for (let c = 0; c < columnas; c++) {
-    murs[c] = []
+    murs[c] = [];
     for (let f = 0; f < filas; f++) {
-        let color = Math.floor(Math.random()*10)
-        const murX = margueTMur + c * (ampleMur + separacioMur)
-        const murY = margueEMur + f * (alturaMur + separacioMur)
-        murs[c][f] = {
-            x: murX,
-            y: murY,
-            status: ESTAT_MUR.SHOW,
-            color: color
-        }
+        crearMur(c, f);
     }
 }
 
@@ -53,16 +60,30 @@ let palaX = (canvas.width - amplePala) / 2;
 let palaY = canvas.height - alturaPala - 10;
 
 let vides = 3;
+let marcador = 0;
 
 const bolaImg = new Image();
 bolaImg.src = 'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/fd362a71-bec6-40e9-8c94-4a1ba38f5b70/dbw5hau-427d0446-844d-418d-a56e-6b4bb6ce961b.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcL2ZkMzYyYTcxLWJlYzYtNDBlOS04Yzk0LTRhMWJhMzhmNWI3MFwvZGJ3NWhhdS00MjdkMDQ0Ni04NDRkLTQxOGQtYTU2ZS02YjRiYjZjZTk2MWIucG5nIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.eECucX9pc30446MZuXS_00W-RRZQQts1H8PFKJSnziU';
 
-const barra = document.getElementById ("sprite")
-const m = document.getElementById ("murs")
+const barra = document.getElementById("sprite");
+const m = document.getElementById("murs");
+
+let pausado = false;
+let animationFrameId;
+
+function pausarJuego() {
+    pausado = true;
+    cancelAnimationFrame(animationFrameId);  
+    document.getElementById("musica").pause();  
+}
+
+function reanudarJuego() {
+    pausado = false;
+    document.getElementById("musica").play(); 
+    pintarCanvas();  
+}
 
 function pintarPala() {
-    //ctx.fillStyle = "#FFF";
-    //ctx.fillRect(palaX, palaY, amplePala, alturaPala);
     ctx.drawImage(
         barra,
         0,
@@ -73,7 +94,7 @@ function pintarPala() {
         palaY,
         amplePala,
         alturaPala
-    )
+    );
 }
 
 function inicialitzadorEvents() {
@@ -122,7 +143,7 @@ function inicialitzadorEvents() {
             setTimeout(() => {
                 dx = dxNueva2;
                 dy = dyNueva2;
-            }, 1000)
+            }, 1000);
         }
 
         if (event.key == 'ArrowDown') {
@@ -135,7 +156,7 @@ function inicialitzadorEvents() {
             setTimeout(() => {
                 dx = dxNueva;
                 dy = dyNueva;
-            }, 1000)
+            }, 1000);
         }
 
         if (event.key == "g") {
@@ -151,9 +172,8 @@ function inicialitzadorEvents() {
             setTimeout(() => {
                 dx = dxNova;
                 dy = dyNova;
-            }, 3000)
+            }, 3000);
         }
-
     }
 
     function soltar(event) {
@@ -166,29 +186,25 @@ function inicialitzadorEvents() {
     }
 }
 
-
-function pintarMurs(){
-    for(let c=0; c<columnas; c++){
-       for(let f=0; f<filas; f++){
-          const murActual = murs[c][f];
-          if(murActual.status == ESTAT_MUR.DESTRUIT){
-             continue;
-          }
-          //ctx,fillStyle = murActual.color;
-          //ctx.rect(murActual.x,murActual.y,ampleMur,alturaMur)
-          //ctx.fill();
-          let clipX = murActual.color*16
-          ctx.drawImage(
-             m,
-             clipX,
-             0,
-             15,
-             6,
-             murActual.x,
-             murActual.y,
-             ampleMur,
-             alturaMur
-          )
+function pintarMurs() {
+    for (let c = 0; c < columnas; c++) {
+        for (let f = 0; f < filas; f++) {
+            const murActual = murs[c][f];
+            if (murActual.status == ESTAT_MUR.DESTRUIT) {
+                continue;
+            }
+            let clipX = murActual.color * 16;
+            ctx.drawImage(
+                m,
+                clipX,
+                0,
+                15,
+                6,
+                murActual.x,
+                murActual.y,
+                ampleMur,
+                alturaMur
+            );
         }
     }
 }
@@ -200,10 +216,13 @@ function deteccioColisio() {
             if (murActual.status === ESTAT_MUR.DESTRUIT) {
                 continue;
             }
-            if (x + radiPilota >= murActual.x && x - radiPilota <= murActual.x + ampleMur &&
-                y + radiPilota >= murActual.y && y - radiPilota <= murActual.y + alturaMur) {
+            if (x >= murActual.x && x <= murActual.x + ampleMur &&
+                y >= murActual.y && y <= murActual.y + alturaMur) {
                 dy = -dy;
+                murActual.vides--;
+                if(murActual.vides == 0){ }
                 murActual.status = ESTAT_MUR.DESTRUIT;
+                marcador += 10;
             }
         }
     }
@@ -232,6 +251,7 @@ function movimentPilota() {
 
     if (y + dy > canvas.height) {
         vides--;
+        marcador -= 100;
 
         radiPilota = 9;
         x = canvas.width / 2;
@@ -256,19 +276,20 @@ function movimentPilota() {
     y += dy;
 }
 
-
 function borrarPantalla() {
     canvas.height = 512;
     canvas.width = 448;
 }
 
 function pintarPilota() {
-        ctx.drawImage(bolaImg, x - radiPilota, y - radiPilota, radiPilota * 2, radiPilota * 2);
+    ctx.drawImage(bolaImg, x - radiPilota, y - radiPilota, radiPilota * 2, radiPilota * 2);
 }
 
-
 function pintarCanvas() {
-    console.log("hola");
+    if (pausado) {
+        return;  
+    }
+
     borrarPantalla();
     pintarPilota();
     pintarPala();
@@ -278,10 +299,31 @@ function pintarCanvas() {
     movimentPilota();
     movimentPala();
 
+    ctx.fillStyle = "#FFF";
+    ctx.font = "13px Arial";
     ctx.fillText("Vides: " + vides, 10, 10);
+    ctx.fillText("Marcador: " + marcador, canvas.width - 100, 10);
 
-    window.requestAnimationFrame(pintarCanvas);
+    animationFrameId = window.requestAnimationFrame(pintarCanvas);
 }
+
+function agregarNuevosMurs() {
+    for (let c = 0; c < 3; c++) { 
+        const cAleatorio = Math.floor(Math.random() * columnas);
+        const fAleatorio = Math.floor(Math.random() * filas);
+        crearMur(cAleatorio, fAleatorio);
+    }
+}
+
+setInterval(agregarNuevosMurs, 10000);
+
+let snd = new Audio ('./KAROL G, Nicki Minaj - Tusa (Official Video) [tbneQDc2H3I].mp3');
+snd.play();
+
+document.getElementById("pausa").addEventListener("click", pausarJuego);  
+document.getElementById("reanuda").addEventListener("click", reanudarJuego);  
 
 pintarCanvas();
 inicialitzadorEvents();
+
+

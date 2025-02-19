@@ -1,15 +1,26 @@
-body{
+body {
     background-image: url('../vi5sdstepgcd1.gif');
     background-size: cover;
-    
+    display: flex;
+    justify-content: center; 
+    align-items: center; 
+    flex-direction: column; 
+    height: 100vh; 
+    margin: 0;
 }
 
-canvas{
+.boto1, .boto2 {
+    text-align: center;
+    margin-top: 20px;
+    border-radius: 10px;
+    background-color: rgb(145, 248, 248);
+}
+
+canvas {
     border: 4px solid white;
     margin: 0 auto;
     display: block;
-    border-bottom: transparent;
-    background-image: url('../fondo\ bo.gif');
+    background-image: url('../fondo bo.gif');
     background-size: cover;
     color: blue;
 }
